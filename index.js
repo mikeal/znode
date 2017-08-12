@@ -7,9 +7,28 @@ const znode = (_stream, rpc) => {
   })
   let stream = msgpackStream(_stream)
 
+  const registry = new Map()
+
+  const prepareRPC = rpc => {
+    let methods = {}
+    let props = {}
+    for (let key in rpc) {
+      if (typeof rpc[key] === 'function') {
+        let id = Math.random().toString()
+        methods[key] = id
+        registry.set(id, rpc[key])
+      } else {
+        props[key] = rpc[key]
+      }
+    }
+    return {methods, props}
+  }
+
   if (rpc) {
-    rpc = Object.assign({}, rpc)
-    stream.write({methods: Object.keys(rpc)})
+    if (rpc.constructor !== Object) {
+      throw new Error('Cannot pass instances as RPC interfaces.')
+    }
+    stream.write(prepareRPC(rpc))
   }
   const remotesMap = new Map()
   const remotePromise = id => {
@@ -25,7 +44,12 @@ const znode = (_stream, rpc) => {
     return promise
   }
   const fromRemote = async (key, ...args) => {
-    return rpc[key](...args)
+    let ret = registry.get(key)(...args)
+    if (ret.then) ret = await ret
+    if (ret.constructor === Object) {
+      ret = prepareRPC(ret)
+    }
+    return ret
   }
   const toRemote = async (key, ...args) => {
     let id = Math.random().toString()
@@ -33,18 +57,24 @@ const znode = (_stream, rpc) => {
     stream.write({method: key, args, id})
     return promise
   }
+
+  const parseRPC = data => {
+    let remotes = {}
+    let mkmethod = key => {
+      return async (...args) => toRemote(key, ...args)
+    }
+    for (let key in data.methods) {
+      remotes[key] = mkmethod(data.methods[key])
+    }
+    for (let key in data.props) {
+      remotes[key] = data.props[key]
+    }
+    return remotes
+  }
+
   stream.on('data', data => {
     if (data.methods) {
-      // manifest
-      let remotes = {}
-      let mkmethod = key => {
-        return async (...args) => toRemote(key, ...args)
-      }
-      data.methods.forEach(key => {
-        remotes[key] = mkmethod(key)
-      })
-
-      resolveRemote(remotes)
+      resolveRemote(parseRPC(data))
       return
     }
     if (data.method) {
@@ -64,7 +94,15 @@ const znode = (_stream, rpc) => {
     /* istanbul ignore else */
     if (data.resolve) {
       let promise = remotesMap.get(data.resolve)
-      if (data.then) promise.resolve(...data.then)
+      if (data.then) {
+        let args = data.then.map(ret => {
+          if (typeof ret === 'object' && ret.methods) {
+            return parseRPC(ret)
+          }
+          return ret
+        })
+        promise.resolve(...args)
+      }
       if (data.catch) promise.reject(new Error(data.catch))
       remotesMap.delete(data.resolve)
     }
