@@ -27,13 +27,14 @@ net.createServer(async socket => {
   let remote = await znode(socket, RPC)
 
   let concater = await remote.createConcat('pre-')
-  console.log(await concater.concat('post')) // pre-post
+  console.log(await concater.concat('post')) // priv-pre-post
 })
 .listen(async () => {
 
   const dynamicRPC = {
     createConcat: str => {
-      return {concat: _str => str + str}
+      let private = 'priv-'
+      return {concat: _str => private + str + str}
     }
   }
 
