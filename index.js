@@ -43,7 +43,7 @@ const znode = (_stream, rpc) => {
     remotesMap.set(id, promise)
     return promise
   }
-  const fromRemote = async (key, ...args) => {
+  const fromRemote = async (key, args) => {
     let ret = registry.get(key)(...args)
     if (ret.then) ret = await ret
     if (ret.constructor === Object) {

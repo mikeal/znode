@@ -92,3 +92,15 @@ test('invalid RPC type', async t => {
     t.same(e.message, 'Cannot pass instances as RPC interfaces.')
   }
 })
+
+test('arguments', async t => {
+  t.plan(1)
+  let rpc = {
+    testargs: (one, two, three) => [one, two, three]
+  }
+  let server = createServer(rpc)
+  await listen(server)(1234)
+  let remote = await createClient(1234)
+  t.same(await remote.testargs(1, 2, 3), [1, 2, 3])
+  clear(server)
+})
