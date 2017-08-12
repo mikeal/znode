@@ -1,6 +1,6 @@
 {
   "name": "znode",
-  "version": "0.1.0",
+  "version": "0.0.0-development",
   "description": "",
   "main": "index.js",
   "dependencies": {
@@ -13,7 +13,8 @@
     "husky": "^0.14.3",
     "standard": "^10.0.3",
     "tap": "^10.7.1",
-    "validate-commit-msg": "^2.14.0"
+    "validate-commit-msg": "^2.14.0",
+    "semantic-release": "^6.3.6"
   },
   "scripts": {
     "commit": "git-cz",
@@ -23,9 +24,14 @@
     "postcoverage": "codecov",
     "precommit": "npm test",
     "prepush": "npm test",
-    "commitmsg": "validate-commit-msg"
+    "commitmsg": "validate-commit-msg",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [],
   "author": "Mikeal Rogers <mikeal.rogers@gmail.com> (http://www.mikealrogers.com)",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikeal/znode.git"
+  }
 }

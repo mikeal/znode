@@ -67,7 +67,6 @@ const znode = (_stream, rpc) => {
       if (data.then) promise.resolve(...data.then)
       if (data.catch) promise.reject(new Error(data.catch))
       remotesMap.delete(data.resolve)
-      return
     }
   })
   return onRemote
