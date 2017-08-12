@@ -5,7 +5,7 @@ znode is a remote method execution library for Node.js and the browser.
 * Bi-directional RPC over *any* stream (WebRTC, WebSockets, TCP, etc)
 * Supports binary types natively without serializing to strings. [1]
 * Simple API using async await.
-* Supports RPC methods returning additional RPC methods.
+* Supports RPC methods **returning additional RPC methods.**
 
 [1] Underlying implementation uses msgpack5. Performance is optimized for binary type usage (JSON would be faster for cases other than binary types).
 
