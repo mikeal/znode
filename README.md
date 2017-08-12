@@ -33,8 +33,8 @@ net.createServer(async socket => {
 
   const dynamicRPC = {
     createConcat: str => {
-      let private = 'priv-'
-      return {concat: _str => private + str + str}
+      let _private = 'priv-'
+      return {concat: _str => _private + str + str}
     }
   }
 
