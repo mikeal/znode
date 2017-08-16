@@ -10,7 +10,7 @@
 
 znode is a remote method execution library for Node.js and the browser.
 
-* Bi-directional RPC over *any* stream (WebRTC, WebSockets, TCP, etc)
+* Bi-directional RPC over *any* stream (WebRTC, [WebSockets](https://github.com/maxogden/websocket-stream), TCP, etc)
 * Supports binary types natively without serializing to strings. [1]
 * Simple API using async await.
 * Supports RPC methods **returning additional RPC methods.**
@@ -42,7 +42,7 @@ net.createServer(async socket => {
   const dynamicRPC = {
     createConcat: str => {
       let _private = 'priv-'
-      return {concat: _str => _private + str + str}
+      return {concat: _str => _private + str + _str}
     }
   }
 
