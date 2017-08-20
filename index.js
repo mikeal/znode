@@ -45,8 +45,8 @@ const znode = (_stream, rpc) => {
   }
   const fromRemote = async (key, args) => {
     let ret = registry.get(key)(...args)
-    if (ret.then) ret = await ret
-    if (ret.constructor === Object) {
+    if (ret && ret.then) ret = await ret
+    if (ret && ret.constructor === Object) {
       ret = prepareRPC(ret)
     }
     return ret
@@ -82,11 +82,14 @@ const znode = (_stream, rpc) => {
       let promise = fromRemote(data.method, data.args)
       promise
       .then((...args) => {
+        if (args.length === 1 && typeof args[0] === 'undefined') {
+          args = []
+        }
         stream.write({resolve: data.id, then: args})
         clean()
       })
       .catch((e) => {
-        stream.write({resolve: data.id, catch: e.message})
+        stream.write({resolve: data.id, catch: e.message, stack: e.stack})
         clean()
       })
       return
@@ -103,7 +106,11 @@ const znode = (_stream, rpc) => {
         })
         promise.resolve(...args)
       }
-      if (data.catch) promise.reject(new Error(data.catch))
+      if (data.catch) {
+        let e = new Error(data.catch)
+        e.stack = data.stack
+        promise.reject(e)
+      }
       remotesMap.delete(data.resolve)
     }
   })

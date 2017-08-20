@@ -104,3 +104,17 @@ test('arguments', async t => {
   t.same(await remote.testargs(1, 2, 3), [1, 2, 3])
   clear(server)
 })
+
+test('function without return', async t => {
+  t.plan(2)
+  let rpc = {
+    test1: () => { },
+    test2: async () => { }
+  }
+  let server = createServer(rpc)
+  await listen(server)(1234)
+  let remote = await createClient(1234)
+  t.same(await remote.test1(), undefined)
+  t.same(await remote.test2(), undefined)
+  clear(server)
+})
