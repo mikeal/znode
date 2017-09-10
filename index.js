@@ -99,7 +99,7 @@ const znode = (_stream, rpc) => {
       let promise = remotesMap.get(data.resolve)
       if (data.then) {
         let args = data.then.map(ret => {
-          if (typeof ret === 'object' && ret.methods) {
+          if (typeof ret === 'object' && ret !== null && ret.methods) {
             return parseRPC(ret)
           }
           return ret
