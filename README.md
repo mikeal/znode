@@ -26,7 +26,7 @@ const RPC = {
   /* async methods work identicaly to sync methods */
   ping2: async () => 'pong2',
   /* supports binary types */
-  pingBuffer: () => Buffer.from('pong')
+  pingBuffer: () => Buffer.from('pong'),
   /* you can also add static properties */
   API: 'v1'
 }
@@ -56,5 +56,5 @@ net.createServer(async socket => {
 ```
 
 RPC methods can return anything that can be serialized by msgpack5.
-RPC methods can also return objects with method additiona methods that will
+RPC methods can also return objects with additional methods that will
 be turned into additional remote methods.
