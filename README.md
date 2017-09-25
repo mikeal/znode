@@ -1,12 +1,17 @@
 # znode
 
-[![Coverage Status](https://coveralls.io/repos/github/mikeal/znode/badge.svg?branch=master)](https://coveralls.io/github/mikeal/znode?branch=master)
 [![Build Status](https://travis-ci.org/mikeal/znode.svg?branch=master)](https://travis-ci.org/mikeal/znode)
 [![dependencies Status](https://david-dm.org/mikeal/znode/status.svg)](https://david-dm.org/mikeal/znode)
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+
+<p>
+  <a href="https://www.patreon.com/bePatron?u=880479">
+    <img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" height="40px" />
+  </a>
+</p>
 
 znode is a remote method execution library for Node.js and the browser.
 
