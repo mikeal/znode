@@ -1,19 +1,22 @@
+/* globals describe, it */
 const znode = require('../')
 const net = require('net')
 const stream = require('stream')
 const promisify = require('util').promisify
-const test = require('tap').test
+const same = require('assert').deepStrictEqual
+
+const test = it
 
 const sockets = []
 
 const createServer = rpc => {
-  let server = net.createServer(socket => {
+  const server = net.createServer(socket => {
     znode(socket, rpc)
   })
   return server
 }
 const createClient = async (port, rpc) => {
-  let socket = net.connect(port)
+  const socket = net.connect(port)
   sockets.push(socket)
   return znode(socket, rpc)
 }
@@ -27,94 +30,93 @@ const clear = (server) => {
   server.close()
 }
 
-test('get and return string', async t => {
-  t.plan(1)
-  let rpc = {ping: () => 'pong'}
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  t.same(await remote.ping(), 'pong')
-  clear(server)
-})
+describe('basics', () => {
+  test('get and return string', async () => {
+    const rpc = { ping: () => 'pong' }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    same(await remote.ping(), 'pong')
+    clear(server)
+  })
 
-test('get and return buffer', async t => {
-  t.plan(1)
-  let rpc = {ping: () => Buffer.from('test')}
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  t.same(await remote.ping(), Buffer.from('test'))
-  clear(server)
-})
+  test('get and return buffer', async () => {
+    const rpc = { ping: () => Buffer.from('test') }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    same(await remote.ping(), Buffer.from('test'))
+    clear(server)
+  })
 
-test('rpc with static values', async t => {
-  t.plan(2)
-  let rpc = {ping: () => Buffer.from('test'), id: 'test'}
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  t.same(await remote.ping(), Buffer.from('test'))
-  t.same(remote.id, 'test')
-  clear(server)
-})
+  test('rpc with static values', async () => {
+    const rpc = { ping: () => Buffer.from('test'), id: 'test' }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    same(await remote.ping(), Buffer.from('test'))
+    same(remote.id, 'test')
+    clear(server)
+  })
 
-test('rpc with async method', async t => {
-  t.plan(1)
-  let rpc = {ping: async () => Buffer.from('test')}
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  t.same(await remote.ping(), Buffer.from('test'))
-  clear(server)
-})
+  test('rpc with async method', async () => {
+    const rpc = { ping: async () => Buffer.from('test') }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    same(await remote.ping(), Buffer.from('test'))
+    clear(server)
+  })
 
-test('throw in RPC method', async t => {
-  t.plan(2)
-  let rpc = { ping: () => { throw new Error('test') } }
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234)
-  try {
-    await remote.ping()
-  } catch (e) {
-    t.type(e, 'Error')
-    t.type(e.message, 'test')
-  }
-  clear(server)
-})
+  test('throw in RPC method', async () => {
+    const rpc = { ping: () => { throw new Error('test') } }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234)
+    let threw = true
+    try {
+      await remote.ping()
+      threw = false
+    } catch (e) {
+      if (e.message !== 'test') throw e
+    }
+    same(threw, true)
+    clear(server)
+  })
 
-test('invalid RPC type', async t => {
-  t.plan(2)
-  try {
-    znode(new stream.Duplex(), Buffer.from('asdf'))
-  } catch (e) {
-    t.type(e, 'Error')
-    t.same(e.message, 'Cannot pass instances as RPC interfaces.')
-  }
-})
+  test('invalid RPC type', async () => {
+    let threw = true
+    const s = new stream.Duplex()
+    try {
+      znode(s, Buffer.from('asdf'))
+      threw = false
+    } catch (e) {
+      if (e.message !== 'Cannot pass instances as RPC interfaces.') throw e
+    }
+    same(threw, true)
+  })
 
-test('arguments', async t => {
-  t.plan(1)
-  let rpc = {
-    testargs: (one, two, three) => [one, two, three]
-  }
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234)
-  t.same(await remote.testargs(1, 2, 3), [1, 2, 3])
-  clear(server)
-})
+  test('arguments', async () => {
+    const rpc = {
+      testargs: (one, two, three) => [one, two, three]
+    }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234)
+    same(await remote.testargs(1, 2, 3), [1, 2, 3])
+    clear(server)
+  })
 
-test('function without return', async t => {
-  t.plan(2)
-  let rpc = {
-    test1: () => { },
-    test2: async () => { }
-  }
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234)
-  t.same(await remote.test1(), undefined)
-  t.same(await remote.test2(), undefined)
-  clear(server)
+  test('function without return', async () => {
+    const rpc = {
+      test1: () => { },
+      test2: async () => { }
+    }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234)
+    same(await remote.test1(), undefined)
+    same(await remote.test2(), undefined)
+    clear(server)
+  })
 })

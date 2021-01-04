@@ -1,29 +1,21 @@
 {
   "name": "znode",
-  "version": "0.0.0-development",
-  "description": "",
+  "version": "0.0.0-dev",
+  "description": "Bi-directional RPC over any stream",
   "main": "index.js",
   "dependencies": {
     "msgpack5-stream": "^1.0.0"
   },
   "devDependencies": {
-    "codecov": "^2.2.0",
-    "commitizen": "^2.9.6",
-    "cz-conventional-changelog": "^2.0.0",
-    "husky": "^0.14.3",
-    "standard": "^10.0.3",
-    "tap": "^10.7.1",
-    "validate-commit-msg": "^2.14.0",
-    "semantic-release": "^6.3.6"
+    "c8": "^7.4.0",
+    "hundreds": "0.0.9",
+    "mocha": "^8.2.1",
+    "standard": "^16.0.3"
   },
   "scripts": {
     "commit": "git-cz",
-    "test": "tap test/test-*.js --100",
-    "posttest": "standard",
-    "coverage": "tap test/test-*.js --coverage-report=lcov",
-    "postcoverage": "codecov",
-    "precommit": "npm test",
-    "prepush": "npm test",
+    "test": "standard && hundreds mocha test/test-*.js",
+    "coverage": "c8 --reporter=html mocha test/test-*.js && npm_config_yes=true npx st -d coverage -p 8080",
     "commitmsg": "validate-commit-msg",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },

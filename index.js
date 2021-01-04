@@ -1,40 +1,39 @@
 const msgpackStream = require('msgpack5-stream')
 
 const znode = (_stream, rpc) => {
+  if (rpc && rpc.constructor !== Object) {
+    throw new Error('Cannot pass instances as RPC interfaces.')
+  }
   let resolveRemote
-  let onRemote = new Promise((resolve, reject) => {
+  const onRemote = new Promise((resolve, reject) => {
     resolveRemote = resolve
   })
-  let stream = msgpackStream(_stream)
+  const stream = msgpackStream(_stream)
 
   const registry = new Map()
 
   const prepareRPC = rpc => {
-    let methods = {}
-    let props = {}
-    for (let key in rpc) {
+    const methods = {}
+    const props = {}
+    for (const key in rpc) {
       if (typeof rpc[key] === 'function') {
-        let id = Math.random().toString()
+        const id = Math.random().toString()
         methods[key] = id
         registry.set(id, rpc[key])
       } else {
         props[key] = rpc[key]
       }
     }
-    return {methods, props}
+    return { methods, props }
   }
 
-  if (rpc) {
-    if (rpc.constructor !== Object) {
-      throw new Error('Cannot pass instances as RPC interfaces.')
-    }
-    stream.write(prepareRPC(rpc))
-  }
+  if (rpc) stream.write(prepareRPC(rpc))
+
   const remotesMap = new Map()
   const remotePromise = id => {
     let _resolve
     let _reject
-    let promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       _resolve = resolve
       _reject = reject
     })
@@ -52,21 +51,21 @@ const znode = (_stream, rpc) => {
     return ret
   }
   const toRemote = async (key, ...args) => {
-    let id = Math.random().toString()
-    let promise = remotePromise(id)
-    stream.write({method: key, args, id})
+    const id = Math.random().toString()
+    const promise = remotePromise(id)
+    stream.write({ method: key, args, id })
     return promise
   }
 
   const parseRPC = data => {
-    let remotes = {}
-    let mkmethod = key => {
+    const remotes = {}
+    const mkmethod = key => {
       return async (...args) => toRemote(key, ...args)
     }
-    for (let key in data.methods) {
+    for (const key in data.methods) {
       remotes[key] = mkmethod(data.methods[key])
     }
-    for (let key in data.props) {
+    for (const key in data.props) {
       remotes[key] = data.props[key]
     }
     return remotes
@@ -78,27 +77,27 @@ const znode = (_stream, rpc) => {
       return
     }
     if (data.method) {
-      let clean = () => {} // clean.
-      let promise = fromRemote(data.method, data.args)
+      const clean = () => {} // clean.
+      const promise = fromRemote(data.method, data.args)
       promise
-      .then((...args) => {
-        if (args.length === 1 && typeof args[0] === 'undefined') {
-          args = []
-        }
-        stream.write({resolve: data.id, then: args})
-        clean()
-      })
-      .catch((e) => {
-        stream.write({resolve: data.id, catch: e.message, stack: e.stack})
-        clean()
-      })
+        .then((...args) => {
+          if (args.length === 1 && typeof args[0] === 'undefined') {
+            args = []
+          }
+          stream.write({ resolve: data.id, then: args })
+          clean()
+        })
+        .catch((e) => {
+          stream.write({ resolve: data.id, catch: e.message, stack: e.stack })
+          clean()
+        })
       return
     }
     /* istanbul ignore else */
     if (data.resolve) {
-      let promise = remotesMap.get(data.resolve)
+      const promise = remotesMap.get(data.resolve)
       if (data.then) {
-        let args = data.then.map(ret => {
+        const args = data.then.map(ret => {
           if (typeof ret === 'object' && ret !== null && ret.methods) {
             return parseRPC(ret)
           }
@@ -107,7 +106,7 @@ const znode = (_stream, rpc) => {
         promise.resolve(...args)
       }
       if (data.catch) {
-        let e = new Error(data.catch)
+        const e = new Error(data.catch)
         e.stack = data.stack
         promise.reject(e)
       }

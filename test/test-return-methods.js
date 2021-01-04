@@ -1,18 +1,21 @@
+/* globals describe, it */
 const znode = require('../')
 const net = require('net')
 const promisify = require('util').promisify
-const test = require('tap').test
+const same = require('assert').deepStrictEqual
+
+const test = it
 
 const sockets = []
 
 const createServer = rpc => {
-  let server = net.createServer(socket => {
+  const server = net.createServer(socket => {
     znode(socket, rpc)
   })
   return server
 }
 const createClient = async (port, rpc) => {
-  let socket = net.connect(port)
+  const socket = net.connect(port)
   sockets.push(socket)
   return znode(socket, rpc)
 }
@@ -26,32 +29,34 @@ const clear = (server) => {
   server.close()
 }
 
-test('get and return string', async t => {
-  t.plan(1)
-  let rpc = {get: () => {
-    return { ping: () => 'pong' }
-  }}
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  let remote2 = await remote.get()
-  t.same(await remote2.ping(), 'pong')
-  clear(server)
-})
+describe('return methods', () => {
+  test('get and return string', async () => {
+    const rpc = {
+      get: () => {
+        return { ping: () => 'pong' }
+      }
+    }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    const remote2 = await remote.get()
+    same(await remote2.ping(), 'pong')
+    clear(server)
+  })
 
-test('get and return null', async t => {
-  t.plan(2)
-  let rpc = {
-    get: () => {
-      return { ping: () => null }
-    },
-    n: n => null
-  }
-  let server = createServer(rpc)
-  await listen(server)(1234)
-  let remote = await createClient(1234, {pong: () => 'ping'})
-  t.same(await remote.n(), null)
-  let remote2 = await remote.get()
-  t.same(await remote2.ping(), null)
-  clear(server)
+  test('get and return null', async () => {
+    const rpc = {
+      get: () => {
+        return { ping: () => null }
+      },
+      n: n => null
+    }
+    const server = createServer(rpc)
+    await listen(server)(1234)
+    const remote = await createClient(1234, { pong: () => 'ping' })
+    same(await remote.n(), null)
+    const remote2 = await remote.get()
+    same(await remote2.ping(), null)
+    clear(server)
+  })
 })
