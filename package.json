@@ -15,6 +15,7 @@
   "scripts": {
     "commit": "git-cz",
     "test": "standard && hundreds mocha test/test-*.js",
+    "test:node-v12": "mocha test/test-*.js",
     "coverage": "c8 --reporter=html mocha test/test-*.js && npm_config_yes=true npx st -d coverage -p 8080",
     "commitmsg": "validate-commit-msg",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
