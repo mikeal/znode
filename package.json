@@ -3,6 +3,7 @@
   "version": "0.0.0-dev",
   "description": "Bi-directional RPC over any stream",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "msgpack5-stream": "^1.0.0"
   },
@@ -14,7 +15,10 @@
   },
   "scripts": {
     "commit": "git-cz",
-    "test": "standard && hundreds mocha test/test-*.js",
+    "build": "npm_config_yes=true npx ipjs@latest build --tests",
+    "publish": "npm_config_yes=true npx ipjs@latest publish",
+    "test": "standard && hundreds mocha test/test-*.js && npm run test:cjs",
+    "test:cjs": "npm run build && mocha dist/cjs/node-test/test-*.js",
     "test:node-v12": "mocha test/test-*.js",
     "coverage": "c8 --reporter=html mocha test/test-*.js && npm_config_yes=true npx st -d coverage -p 8080",
     "commitmsg": "validate-commit-msg",

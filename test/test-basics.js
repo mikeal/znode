@@ -1,9 +1,9 @@
 /* globals describe, it */
-const znode = require('../')
-const net = require('net')
-const stream = require('stream')
-const promisify = require('util').promisify
-const same = require('assert').deepStrictEqual
+import znode from '../index.js'
+import net from 'net'
+import stream from 'stream'
+import { promisify } from 'util'
+import { deepStrictEqual as same } from 'assert'
 
 const test = it
 

@@ -1,4 +1,4 @@
-const msgpackStream = require('msgpack5-stream')
+import msgpackStream from 'msgpack5-stream'
 
 const znode = (_stream, rpc) => {
   if (rpc && rpc.constructor !== Object) {
@@ -116,4 +116,4 @@ const znode = (_stream, rpc) => {
   return onRemote
 }
 
-module.exports = znode
+export default znode
